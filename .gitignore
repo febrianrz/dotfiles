@@ -12,9 +12,10 @@
 **/__pycache__/
 
 .mono/*
-raycast/extensions
+raycast
 solana
 gh-copilot
+github-copilot
 gh
 flutter
 yarn

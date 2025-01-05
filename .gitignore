@@ -1,0 +1,32 @@
+# Config files yang berisi credential/sensitive data
+**/*.env
+**/*.key
+**/credentials.*
+**/*_token
+**/*_key
+**/*.pem
+
+# Cache directories
+**/.cache/
+**/cache/
+**/__pycache__/
+
+
+raycast/extensions
+solana
+gh-copilot
+gh
+flutter
+yarn
+waveterm/connections.json
+waveterm/presets
+valet
+nvim/pack/*
+psysh
+configstore
+tinkerwell
+filezilla
+gatsby
+htop
+tmux/plugins/
+github-copilot/apps.json

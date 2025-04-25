@@ -1,7 +1,9 @@
-theme = catppuccin-mocha
+# theme = catppuccin-mocha
+theme = light:github-light-default,dark:github-dark-default
 #font-size = 16
 
-keybind = global:cmd+/=toggle_quick_terminal
+keybind = global:ctrl+/=toggle_quick_terminal
+split-divider-color = #3333ff
 # By default Reload config with shft + cmd + , 
 
 #theme = rose-pine
@@ -67,3 +69,9 @@ keybind = super+s>h=goto_split:left
 keybind = super+s>j=goto_split:bottom
 keybind = super+s>k=goto_split:top
 keybind = super+s>l=goto_split:right
+
+# resize split
+keybind = super+r>h=resize_split:left,50
+keybind = super+r>j=resize_split:down,50
+keybind = super+r>k=resize_split:up,50
+keybind = super+r>l=resize_split:right,50

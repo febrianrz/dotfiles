@@ -24,8 +24,9 @@ keymap.set("n", "<leader>tf", "<cmd>tabnew %<CR>", { desc = "Open current buffer
 
 --lazy git
 keymap.set("n", "<leader>lg", "<cmd>LazyGit<CR>", { desc = "Lazy Git Open" }) --Open Lazy Git
-
 keymap.set("n", "<leader>Q", "<cmd>qa!<CR>", { desc = "Quit All" })
+keymap.set("n", "<leader>n", "<cmd>bnext<CR>", { desc = "Buffer Next" })
+keymap.set("n", "<leader>p", "<cmd>bprevious<CR>", { desc = "Buffer Next" })
 
 keymap.set(
   "n",

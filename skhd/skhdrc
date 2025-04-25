@@ -1,0 +1,1 @@
+cmd + alt - p : osascript -e 'tell application "System Events" to tell process "PhpStorm" to set frontmost to true'

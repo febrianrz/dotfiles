@@ -110,10 +110,11 @@ local config = {
 				saturation = 1.0,
 				brightness = 0.03,
 			},
-			opacity = 0.99,
+			opacity = 0.7,
 		},
 	},
-	window_background_opacity = 0.3,
+	window_background_opacity = 0.2,
+	macos_window_background_blur = 40,
 	max_fps = 120,
 	prefer_egl = true,
 }

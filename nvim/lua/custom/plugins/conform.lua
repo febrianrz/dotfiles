@@ -1,7 +1,7 @@
 return {
   'stevearc/conform.nvim',
   opts = function(_, opts)
-    opts.formatters_by_ft = vim.tbl_deep_extend("force", opts.formatters_by_ft or {}, {
+    opts.formatters_by_ft = vim.tbl_deep_extend('force', opts.formatters_by_ft or {}, {
       javascript = { 'prettier' },
       typescriptreact = { 'prettier' },
       html = { 'prettier' },
@@ -9,6 +9,8 @@ return {
       go = { 'gofmt' },
       sh = { 'shfmt' },
       lua = { 'stylua' },
+
+      sql = { 'sql-formatter-cli' },
     })
 
     -- Overwrite langsung, karena di versi baru ini function bukan table
@@ -19,4 +21,3 @@ return {
     }
   end,
 }
-

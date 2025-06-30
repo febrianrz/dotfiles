@@ -206,7 +206,6 @@ opt.swapfile = false
 vim.keymap.set('n', '<leader>Q', '<cmd>qa!<cr>', { desc = 'Quit all' })
 vim.keymap.set('n', '<leader>qq', '<cmd>q!<cr>', { desc = 'Quit Current Buffer Without Save' })
 vim.keymap.set('n', '<leader>qx', '<cmd>x<cr>', { desc = 'Quit Current Buffer & Save' })
-vim.keymap.set('n', '<leader>qw', '<cmd>w<cr>', { desc = 'Save Current File' })
 vim.keymap.set('n', '<leader>pi', '<cmd>PhpactorImportClass<cr>', { desc = 'Save Current File' })
 
 -- disable terminal number
@@ -225,9 +224,11 @@ vim.keymap.set('n', '<space>st', function()
   vim.api.nvim_win_set_height(0, 5)
 end)
 
-opt.foldlevel = 20
-opt.foldmethod = 'expr'
-opt.foldexpr = 'nvim_treesitter#foldexpr()'
+-- opt.foldlevel = 20
+-- opt.foldmethod = 'expr'
+-- opt.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -906,7 +907,35 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+        -- preset = 'default',
+        ['<CR>'] = { 'accept', 'fallback' },
+        ['<Tab>'] = {
+          'select_next',
+          'snippet_forward',
+          'fallback',
+        },
+        ['<S-Tab>'] = {
+          'select_prev',
+          'snippet_backward',
+          'fallback',
+        },
+        ['<C-j>'] = {
+          'select_next',
+          'snippet_forward',
+          'fallback',
+        },
+        ['<C-k>'] = {
+          'select_prev',
+          'snippet_backward',
+          'fallback',
+        },
+        ['<C-n>'] = { 'select_next', 'fallback' },
+        ['<C-p>'] = { 'select_prev', 'fallback' },
+
+        ['<C-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+        ['<C-e>'] = { 'hide' },
+        ['<C-u>'] = { 'scroll_documentation_up', 'fallback' },
+        ['<C-d>'] = { 'scroll_documentation_down', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -1130,6 +1159,10 @@ vim.keymap.set('n', '<leader>ba', close_all_buffers, { desc = 'Close all buffers
 vim.keymap.set('n', '<leader>bo', close_other_buffers, { desc = 'Close other buffers' })
 vim.keymap.set('n', '<leader>bl', close_left_buffers, { desc = 'Close left buffers' })
 vim.keymap.set('n', '<leader>br', close_right_buffers, { desc = 'Close right buffers' })
+vim.keymap.set('n', '<leader>bp', '<cmd>bprevious<CR>', { desc = 'Go to previous buffer' })
+vim.keymap.set('n', '<leader>bn', '<cmd>bnext<CR>', { desc = 'Go to Next buffer' })
+vim.keymap.set('n', '<leader>wf', '<cmd>w<CR>', { desc = 'Save File' })
+vim.keymap.set('n', '<leader>wg', '<cmd>wa<CR>', { desc = 'Save all modified files' })
 
 require('custom.formatter_check').check()
 
@@ -1151,7 +1184,63 @@ require('custom.laravel_tinker').setup()
 vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
 vim.keymap.set('n', '<leader>Y', [["+Y]])
 
--- load region folding
-local region_fold = require 'custom.region_fold'
-vim.o.foldmethod = 'expr'
-vim.o.foldexpr = "v:lua.require'custom.region_fold'.region_fold_expr(v:lnum)"
+vim.o.foldmethod = 'indent'
+vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+
+vim.api.nvim_create_autocmd('BufReadPost', {
+  callback = function()
+    vim.defer_fn(function()
+      vim.cmd 'normal! zR'
+    end, 0)
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'TelescopePreview',
+  callback = function()
+    vim.wo.foldenable = false
+    vim.wo.foldmethod = 'manual' -- pastikan foldnya gak aktif
+  end,
+})
+
+-- Grup autocommand untuk pengaturan folding di buffer khusus
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = {
+    'dbout', -- Untuk hasil query dadbod
+    'TelescopeResults', -- Untuk jendela utama Telescope
+    'TelescopePreview', -- Untuk jendela preview Telescope
+  },
+  desc = 'Disable folding for special buffers',
+  callback = function()
+    -- Untuk buffer ini, kita matikan folding sepenuhnya
+    vim.opt_local.foldenable = false
+    vim.opt_local.relativenumber = true
+    vim.opt_local.number = true
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'dbui', -- Untuk jendela navigasi dadbod-ui
+  desc = 'Open all folds in dadbod-ui on open',
+  callback = function()
+    -- Untuk dbui, kita tidak mematikan folding,
+    -- tapi kita membuka semua lipatan agar tree-nya terlihat.
+    -- Ini memungkinkan Anda untuk melipat/membukanya secara manual nanti.
+    vim.wo.foldlevel = 99
+    -- atau cara yang lebih "memaksa":
+    -- vim.cmd('normal! zR')
+  end,
+})
+
+-- Di init.lua
+vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+  pattern = '*',
+  callback = function()
+    if vim.bo.filetype == 'dbui' then
+      vim.wo.relativenumber = true
+      vim.wo.number = true
+    end
+  end,
+})
+
+-- Keymaps untuk Database UI (dadbod-ui)

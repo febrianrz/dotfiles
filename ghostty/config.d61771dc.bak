@@ -75,4 +75,3 @@ keybind = super+r>h=resize_split:left,50
 keybind = super+r>j=resize_split:down,50
 keybind = super+r>k=resize_split:up,50
 keybind = super+r>l=resize_split:right,50
-keybind = shift+enter=text:\n

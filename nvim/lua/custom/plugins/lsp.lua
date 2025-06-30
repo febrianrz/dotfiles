@@ -8,7 +8,7 @@ return {
     opts = function(_, opts)
       local on_attach = function(client, bufnr)
         -- keymap go to definition
-        vim.keymap.set("n", "gr", vim.lsp.buf.definition, { buffer = bufnr })
+        vim.keymap.set('n', 'gr', vim.lsp.buf.definition, { buffer = bufnr })
 
         -- Kalau ada default on_attach dari LazyVim, pastikan tetap dipanggil
         if opts.on_attach then
@@ -18,8 +18,15 @@ return {
 
       opts.on_attach = on_attach
 
+      -- opts.servers = {
+      --   intelephense = {}, -- atau ganti ke intelephense di sini
+      -- }
       opts.servers = {
-        intelephense = {}, -- atau ganti ke intelephense di sini
+        phpactor = {
+          cmd = { 'phpactor', 'language-server' },
+          filetypes = { 'php' },
+          root_dir = require('lspconfig.util').root_pattern('composer.json', '.git'),
+        },
       }
 
       return opts

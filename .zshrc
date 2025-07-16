@@ -123,7 +123,28 @@ alias nzo="~/scripts/zoxide_openfiles_nvim.sh"
 
 # Next level of an ls 
 # options :  --no-filesize --no-time --no-permissions 
-alias ls="eza --no-filesize --long --color=always --icons=always --no-user" 
+# Initialize theme on shell startup
+if [ -f ~/.config/toggle_theme.sh ]; then
+    source ~/.config/toggle_theme.sh
+fi
+
+# Create separate aliases for light and dark modes
+alias lsl="eza --no-filesize --long --no-permissions --color=always --icons=always --no-user"
+alias lsd="eza --no-filesize --long --color=always --icons=always --no-user"
+
+# Default to dark mode
+alias ls="lsd"
+
+# Function to switch ls theme
+switch_ls() {
+    if [[ "$1" == "light" ]]; then
+        alias ls="lsl"
+        echo "Switched to light mode ls"
+    else
+        alias ls="lsd"
+        echo "Switched to dark mode ls"
+    fi
+} 
 
 # tree
 alias tree="tree -L 3 -a -I '.git' --charset X "
@@ -158,7 +179,7 @@ source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
-neofetch --ascii ~/Documents/ascii_art.txt
+# neofetch --ascii ~/Documents/ascii_art.txt
 
 DISABLE_AUTO_UPDATE="true"
 DISABLE_UPDATE_PROMPT="true"
@@ -166,3 +187,31 @@ DISABLE_UPDATE_PROMPT="true"
 export TERM=xterm-256color
 #end
 #zprof
+
+
+# Herd injected PHP binary.
+export PATH="/Users/febrianreza/Library/Application Support/Herd/bin/":$PATH
+
+
+# Herd injected PHP 8.4 configuration.
+export HERD_PHP_84_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/84/"
+
+
+# Herd injected PHP 8.3 configuration.
+export HERD_PHP_83_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/83/"
+
+
+# Herd injected PHP 8.2 configuration.
+export HERD_PHP_82_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/82/"
+
+
+# Herd injected PHP 8.1 configuration.
+export HERD_PHP_81_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/81/"
+
+
+# Herd injected PHP 8.0 configuration.
+export HERD_PHP_80_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/80/"
+
+
+# Herd injected PHP 7.4 configuration.
+export HERD_PHP_74_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/74/"

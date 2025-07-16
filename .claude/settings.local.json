@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(brew install:*)",
+      "Bash(cargo install:*)",
+      "Bash(git clone:*)",
+      "Bash(echo:*)",
+      "Bash(source:*)",
+      "Bash(export TERM_BACKGROUND=\"light\")",
+      "Bash(~/Scripts/toggle_theme.sh:*)",
+      "Bash(export TERM_BACKGROUND=\"dark\")",
+      "Bash(eza:*)",
+      "Bash(touch:*)",
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(export TERM_BACKGROUND=light)",
+      "Bash(~/.config/toggle_theme.sh:*)",
+      "Bash(alias:*)",
+      "Bash(ln:*)",
+      "Bash(rg:*)"
+    ],
+    "deny": []
+  }
+}

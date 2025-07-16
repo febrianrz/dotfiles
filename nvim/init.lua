@@ -155,7 +155,8 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 3
+vim.opt.sidescrolloff = 5
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
@@ -186,8 +187,22 @@ opt.cursorline = true
 -- turn on termguicolors for tokyonight colorscheme to work
 -- (have to use iterm2 or any other true color terminal)
 opt.termguicolors = true
-opt.background = 'dark' -- colorschemes that can be light or dark will be made dark
 opt.signcolumn = 'yes' -- show sign column so that text doesn't shift
+
+-- Window sizing
+opt.winwidth = 12  -- Minimum window width
+opt.winheight = 6 -- Minimum window height
+opt.winminwidth = 10
+opt.winminheight = 5
+
+-- Add visual padding with colorcolumn and fillchars
+opt.colorcolumn = '' -- We'll set this dynamically
+opt.fillchars = { eob = ' ', fold = ' ', foldsep = ' ', diff = '╱' }
+
+-- UI settings
+opt.cmdheight = 1 -- Command line height
+opt.laststatus = 3 -- Global statusline
+opt.showtabline = 1 -- Show tabline only when multiple tabs
 
 -- backspace
 opt.backspace = 'indent,eol,start' -- allow backspace on indent, end of line or insert mode start position
@@ -279,6 +294,20 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+-- Global theme switching function - define early
+_G.switch_theme = function()
+  local term_bg = os.getenv('TERM_BACKGROUND')
+  if term_bg == 'light' then
+    vim.opt.background = 'light'
+    -- Use pcall to safely attempt colorscheme change
+    pcall(vim.cmd.colorscheme, 'tokyonight-day')
+  else
+    vim.opt.background = 'dark'
+    -- Use pcall to safely attempt colorscheme change
+    pcall(vim.cmd.colorscheme, 'tokyonight-night')
+  end
+end
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -908,12 +937,9 @@ require('lazy').setup({
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         -- preset = 'default',
-        ['<CR>'] = { 'accept', 'fallback' },
-        ['<Tab>'] = {
-          'select_next',
-          'snippet_forward',
-          'fallback',
-        },
+        ['<C-y>'] = { 'accept', 'fallback' },
+        ['<CR>'] = { 'fallback' },
+        ['<Tab>'] = { 'fallback' },
         ['<S-Tab>'] = {
           'select_prev',
           'snippet_backward',
@@ -994,8 +1020,8 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      -- vim.cmd.colorscheme 'tokyonight-night'
-      vim.cmd.colorscheme 'vesper'
+      -- Initial colorscheme will be set by the theme switcher function
+      _G.switch_theme()
     end,
   },
 
@@ -1166,9 +1192,83 @@ vim.keymap.set('n', '<leader>wg', '<cmd>wa<CR>', { desc = 'Save all modified fil
 
 require('custom.formatter_check').check()
 
+-- Auto-detect background changes from WezTerm using SIGUSR1
+vim.api.nvim_create_autocmd('Signal', {
+  pattern = 'SIGUSR1',
+  callback = function()
+    _G.switch_theme()
+  end,
+})
+
+-- Also watch for environment variable changes
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = function()
+    _G.switch_theme()
+  end,
+})
+
+-- Minimal window setup - no excessive padding
+vim.api.nvim_create_autocmd({ 'VimEnter', 'VimResized', 'WinEnter' }, {
+  callback = function()
+    -- Set minimal, consistent UI elements
+    vim.opt.numberwidth = 4
+    vim.opt.foldcolumn = '0'
+  end,
+})
+
+-- Create a more visual padding with custom highlight
+vim.api.nvim_create_autocmd('ColorScheme', {
+  callback = function()
+    -- Make the background slightly different for padding effect
+    local bg = vim.api.nvim_get_hl_by_name('Normal', true).background
+    if bg then
+      vim.api.nvim_set_hl(0, 'PaddingBackground', { bg = bg })
+    end
+  end,
+})
+
+-- Add keybinding to toggle padding
+vim.keymap.set('n', '<leader>tp', function()
+  local current_scrolloff = vim.opt.scrolloff:get()
+  if current_scrolloff > 15 then
+    vim.opt.scrolloff = 3
+    vim.opt.sidescrolloff = 5
+    vim.opt.foldcolumn = '0'
+    vim.opt.numberwidth = 4
+    vim.opt.cmdheight = 1
+    print("Padding disabled")
+  else
+    local height = vim.o.lines
+    local width = vim.o.columns
+    vim.opt.scrolloff = math.max(25, math.floor(height * 0.2))
+    vim.opt.sidescrolloff = math.max(25, math.floor(width * 0.15))
+    vim.opt.foldcolumn = '5'
+    vim.opt.numberwidth = 12
+    vim.opt.cmdheight = 3
+    print("THICK padding enabled!")
+  end
+end, { desc = '[T]oggle [P]adding' })
+
 vim.api.nvim_create_user_command('CleanUse', function()
   require('custom.clean_unused_used_use').clean()
 end, {})
+
+-- Create command to manually switch theme
+vim.api.nvim_create_user_command('SwitchTheme', function()
+  _G.switch_theme()
+end, { desc = 'Switch theme based on TERM_BACKGROUND' })
+
+-- Create command to toggle theme
+vim.api.nvim_create_user_command('ToggleTheme', function()
+  local current_bg = vim.opt.background:get()
+  if current_bg == 'dark' then
+    vim.opt.background = 'light'
+    vim.cmd.colorscheme 'tokyonight-day'
+  else
+    vim.opt.background = 'dark' 
+    vim.cmd.colorscheme 'tokyonight-night'
+  end
+end, { desc = 'Toggle between light and dark theme' })
 
 local open_git_repo = require('custom.open_git_repo').open_git_repo
 local open_git_pull_req_main = require('custom.open_git_repo').open_pull_request_main

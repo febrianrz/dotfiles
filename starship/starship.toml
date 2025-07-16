@@ -1,0 +1,32 @@
+[directory]
+style = "bold bright-cyan"
+truncation_length = 3
+truncate_to_repo = true
+
+[character]
+success_symbol = "[❯](bold bright-white)"
+error_symbol = "[❯](bold red)"
+
+[git_branch]
+style = "bold bright-magenta"
+
+[git_status]
+style = "bold bright-white"
+
+[git_state]
+style = "bold bright-white"
+
+[nodejs]
+format = "[$symbol($version )]($style)"
+style = "bold bright-green"
+symbol = "⬢ "
+
+[php]
+format = "[$symbol($version )]($style)"
+style = "bold bright-blue"
+symbol = "🐘 "
+
+[python]
+format = "[$symbol$pyenv_prefix($version )]($style)"
+style = "bold bright-yellow"
+symbol = "🐍 "

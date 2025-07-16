@@ -12,6 +12,7 @@
   "fidget.nvim": { "branch": "main", "commit": "d9ba6b7bfe29b3119a610892af67602641da778e" },
   "git-blame.nvim": { "branch": "master", "commit": "8503b199edf9a666fe7b1a989cf14e3c26b2eb03" },
   "gitsigns.nvim": { "branch": "main", "commit": "1b0350ab707713b2bc6c236151f1a324175347b1" },
+  "harpoon": { "branch": "master", "commit": "1bc17e3e42ea3c46b33c0bbad6a880792692a1b3" },
   "indent-blankline.nvim": { "branch": "master", "commit": "005b56001b2cb30bfa61b7986bc50657816ba4ba" },
   "larago.nvim": { "branch": "master", "commit": "20da44aa3e7529641d832b1135d5acee475b8cb2" },
   "laravel-ide-helper.nvim": { "branch": "main", "commit": "2dda9e04f1c8cd522faa84cd3a8e5b4b52ba81bd" },

@@ -12,6 +12,7 @@ return {
         desc = 'Accept Copilot suggestion'
       })
       
+      -- Navigation
       vim.keymap.set('i', '<C-;>', '<Plug>(copilot-next)', {
         desc = 'Next Copilot suggestion'
       })
@@ -20,6 +21,7 @@ return {
         desc = 'Previous Copilot suggestion'
       })
       
+      -- Dismiss
       vim.keymap.set('i', '<C-\\>', '<Plug>(copilot-dismiss)', {
         desc = 'Dismiss Copilot suggestion'
       })

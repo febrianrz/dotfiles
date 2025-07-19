@@ -190,7 +190,7 @@ opt.termguicolors = true
 opt.signcolumn = 'yes' -- show sign column so that text doesn't shift
 
 -- Window sizing
-opt.winwidth = 12  -- Minimum window width
+opt.winwidth = 12 -- Minimum window width
 opt.winheight = 6 -- Minimum window height
 opt.winminwidth = 10
 opt.winminheight = 5
@@ -297,7 +297,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- Global theme switching function - define early
 _G.switch_theme = function()
-  local term_bg = os.getenv('TERM_BACKGROUND')
+  local term_bg = os.getenv 'TERM_BACKGROUND'
   if term_bg == 'light' then
     vim.opt.background = 'light'
     -- Use pcall to safely attempt colorscheme change
@@ -524,6 +524,36 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
       vim.keymap.set('n', '<leader>sb', '<cmd>Telescope buffers<cr>', { desc = 'Buffer Files' })
+
+      -- Git related shortcuts
+      vim.keymap.set('n', '<leader>gh', builtin.git_bcommits, { desc = '[G]it [H]istory - Git commits for current buffer' })
+      vim.keymap.set('n', '<leader>gH', builtin.git_commits, { desc = '[G]it [H]istory All - Git commits for entire repo' })
+
+      -- Laravel Routes shortcuts
+      vim.keymap.set('n', '<leader>ar', function()
+        require('custom.laravel_routes_simple').route_picker()
+      end, { desc = '[A]rtisan [R]outes - Laravel Routes Browser' })
+      vim.keymap.set('n', '<leader>aR', function()
+        require('custom.laravel_routes_simple').route_list()
+      end, { desc = '[A]rtisan [R]outes List - Simple terminal output' })
+      vim.keymap.set('n', '<leader>ad', function()
+        require('custom.laravel_routes_simple').debug()
+      end, { desc = '[A]rtisan [D]ebug - Debug Laravel routes' })
+
+      -- DD Counter shortcuts
+      vim.keymap.set('n', '<leader>xd', function()
+        require('custom.dd_counter').count_dd()
+      end, { desc = '[X] [D]D Count - Count dd() in current file' })
+      vim.keymap.set('n', '<leader>xD', function()
+        require('custom.dd_counter').find_all_dd()
+      end, { desc = '[X] [D]D Find - Find all dd() with Telescope' })
+      vim.keymap.set('n', '<leader>xc', function()
+        require('custom.dd_counter').clean_dd()
+      end, { desc = '[X] [C]lean - Remove all dd() from file' })
+
+      -- Setup custom modules
+      require('custom.laravel_routes_simple').setup()
+      require('custom.dd_counter').setup()
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -1040,11 +1070,12 @@ require('lazy').setup({
       require('mini.ai').setup { n_lines = 500 }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
+      -- DISABLED: Using nvim-surround plugin instead
       --
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      -- require('mini.surround').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
@@ -1236,7 +1267,7 @@ vim.keymap.set('n', '<leader>tp', function()
     vim.opt.foldcolumn = '0'
     vim.opt.numberwidth = 4
     vim.opt.cmdheight = 1
-    print("Padding disabled")
+    print 'Padding disabled'
   else
     local height = vim.o.lines
     local width = vim.o.columns
@@ -1245,7 +1276,7 @@ vim.keymap.set('n', '<leader>tp', function()
     vim.opt.foldcolumn = '5'
     vim.opt.numberwidth = 12
     vim.opt.cmdheight = 3
-    print("THICK padding enabled!")
+    print 'THICK padding enabled!'
   end
 end, { desc = '[T]oggle [P]adding' })
 
@@ -1265,7 +1296,7 @@ vim.api.nvim_create_user_command('ToggleTheme', function()
     vim.opt.background = 'light'
     vim.cmd.colorscheme 'tokyonight-day'
   else
-    vim.opt.background = 'dark' 
+    vim.opt.background = 'dark'
     vim.cmd.colorscheme 'tokyonight-night'
   end
 end, { desc = 'Toggle between light and dark theme' })
@@ -1276,9 +1307,75 @@ local open_git_pull_req_main = require('custom.open_git_repo').open_pull_request
 vim.keymap.set('n', '<leader>go', open_git_repo, { desc = 'Open Git Repo' })
 vim.keymap.set('n', '<leader>gp', open_git_pull_req_main, { desc = 'Open Pull Request Main' })
 
+-- Reload Neovim configuration
+vim.keymap.set('n', '<leader>R', function()
+  -- Save current state
+  local current_file = vim.fn.expand('%')
+  local current_line = vim.fn.line('.')
+  local current_col = vim.fn.col('.')
+  
+  -- Reload config
+  vim.notify('Reloading Neovim configuration...', vim.log.levels.INFO)
+  
+  -- Clear lua cache
+  for name, _ in pairs(package.loaded) do
+    if name:match('^custom') or name:match('^lua.custom') then
+      package.loaded[name] = nil
+    end
+  end
+  
+  -- Reload init.lua
+  dofile(vim.env.MYVIMRC)
+  
+  -- Restore position if file still exists
+  if vim.fn.filereadable(current_file) == 1 then
+    vim.cmd('edit ' .. current_file)
+    vim.fn.cursor(current_line, current_col)
+  end
+  
+  -- Clear search history to prevent pattern errors
+  vim.fn.histdel('search', -1)
+  vim.cmd('nohlsearch')
+  
+  vim.notify('Configuration reloaded! 🎉', vim.log.levels.INFO)
+end, { desc = 'Reload Neovim config' })
+
 -- Laravel Tinker
 require('custom.laravel_tinker').setup()
 -- End Laravel Tinker
+
+-- Laravel DD Helper
+require('custom.laravel_dd').setup()
+-- End Laravel DD Helper
+
+-- Git Changes Helper
+require('custom.git_changes').setup()
+-- End Git Changes Helper
+
+-- Laravel Blade Tools
+require('custom.laravel_blade_tools').setup()
+-- End Laravel Blade Tools
+
+-- Laravel Routes Tools
+require('custom.laravel_routes').setup()
+-- End Laravel Routes Tools
+
+-- Laravel Livewire Tools
+require('custom.laravel_livewire_tools').setup()
+-- End Laravel Livewire Tools
+
+-- Laravel Debug Tools
+require('custom.laravel_debug_tools').setup()
+-- End Laravel Debug Tools
+
+-- Laravel Logs
+require('custom.laravel_logs').setup()
+-- Laravel Logs keybindings
+vim.keymap.set('n', '<leader>ll', function() require('custom.laravel_logs').log_files_picker() end, { desc = '[L]aravel [L]ogs - Browse log files' })
+vim.keymap.set('n', '<leader>le', function() require('custom.laravel_logs').log_entries_picker() end, { desc = '[L]aravel log [E]ntries - Browse latest entries' })
+vim.keymap.set('n', '<leader>lt', function() require('custom.laravel_logs').tail_log() end, { desc = '[L]aravel [T]ail - Watch log in real-time' })
+vim.keymap.set('n', '<leader>lc', function() require('custom.laravel_logs').clear_all_logs() end, { desc = '[L]aravel [C]lear - Clear all log files' })
+-- End Laravel Logs
 --
 -- override yank to copy to system clipboard
 vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
@@ -1344,3 +1441,105 @@ vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
 })
 
 -- Keymaps untuk Database UI (dadbod-ui)
+--
+vim.api.nvim_create_autocmd('FileType', {
+  -- Tambahkan "dbschema" ke dalam pattern
+  pattern = { 'dbout', 'dbschema' },
+  callback = function()
+    vim.opt_local.wrap = false
+  end,
+})
+
+-- ===================================================================
+-- FORCE ENABLE TREESITTER CONTEXT GLOBALLY FOR ALL PROJECTS
+-- ===================================================================
+
+-- Set global flag immediately
+vim.g.treesitter_context_globally_enabled = true
+
+-- Force enable function
+local function force_enable_treesitter_context()
+  local success, context = pcall(require, 'treesitter-context')
+  if success then
+    context.enable()
+    return true
+  end
+  return false
+end
+
+-- Try to enable immediately after VimEnter
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = function()
+    -- Try immediately
+    if not force_enable_treesitter_context() then
+      -- If failed, retry after plugins are loaded
+      vim.defer_fn(function()
+        force_enable_treesitter_context()
+      end, 1000)
+    end
+  end,
+})
+
+-- Force enable on every buffer/tab/window change
+vim.api.nvim_create_autocmd({ 'BufEnter', 'TabEnter', 'WinEnter', 'BufWinEnter' }, {
+  callback = function()
+    if vim.g.treesitter_context_globally_enabled then
+      vim.schedule(function()
+        force_enable_treesitter_context()
+      end)
+    end
+  end,
+})
+
+-- Timer to check every 3 seconds and force enable if disabled
+local timer = vim.loop.new_timer()
+if timer then
+  timer:start(3000, 3000, vim.schedule_wrap(function()
+    if vim.g.treesitter_context_globally_enabled then
+      local success, context = pcall(require, 'treesitter-context')
+      if success and not context.enabled() then
+        context.enable()
+      end
+    end
+  end))
+end
+
+-- Global command to check status
+vim.api.nvim_create_user_command('TSContextStatus', function()
+  local success, context = pcall(require, 'treesitter-context')
+  if success then
+    local status = context.enabled() and "✅ ENABLED" or "❌ DISABLED"
+    local global_flag = vim.g.treesitter_context_globally_enabled and "✅ ON" or "❌ OFF"
+    vim.notify(
+      string.format("Treesitter Context:\n• Status: %s\n• Global Force: %s", status, global_flag),
+      vim.log.levels.INFO,
+      { title = "TSContext Status" }
+    )
+  else
+    vim.notify("❌ Treesitter-context plugin not loaded", vim.log.levels.ERROR)
+  end
+end, { desc = "Check treesitter-context status" })
+
+-- Global command to permanently disable the global force (if needed)
+vim.api.nvim_create_user_command('TSContextDisableGlobal', function()
+  vim.g.treesitter_context_globally_enabled = false
+  vim.notify("🔴 Global treesitter-context force DISABLED", vim.log.levels.WARN)
+end, { desc = "Disable global treesitter-context force" })
+
+-- Global command to re-enable the global force
+vim.api.nvim_create_user_command('TSContextEnableGlobal', function()
+  vim.g.treesitter_context_globally_enabled = true
+  force_enable_treesitter_context()
+  vim.notify("🟢 Global treesitter-context force ENABLED", vim.log.levels.INFO)
+end, { desc = "Enable global treesitter-context force" })
+
+-- Easy keymaps for global treesitter-context management
+vim.keymap.set('n', '<leader>tg', '<cmd>TSContextStatus<cr>', { desc = 'Check TSContext global status' })
+vim.keymap.set('n', '<leader>tf', function()
+  vim.g.treesitter_context_globally_enabled = true
+  local success, context = pcall(require, 'treesitter-context')
+  if success then
+    context.enable()
+    vim.notify("🔥 TSContext globally FORCED ON!", vim.log.levels.INFO)
+  end
+end, { desc = 'Force enable TSContext globally' })

@@ -6,7 +6,7 @@ return {
   end,
   keys = {
     {
-      '<leader>a',
+      '<leader>ha',
       function()
         require('harpoon.mark').add_file()
       end,
@@ -20,7 +20,7 @@ return {
       desc = 'Harpoon: Toggle UI',
     },
     {
-      '<leader>d',
+      '<leader>hd',
       function()
         require('harpoon.mark').rm_file()
       end,

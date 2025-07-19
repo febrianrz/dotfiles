@@ -215,3 +215,4 @@ export HERD_PHP_80_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/
 
 # Herd injected PHP 7.4 configuration.
 export HERD_PHP_74_INI_SCAN_DIR="/Users/febrianreza/Library/Application Support/Herd/config/php/74/"
+export PATH="$HOME/.nvm/versions/node/v18.20.6/bin:$PATH"

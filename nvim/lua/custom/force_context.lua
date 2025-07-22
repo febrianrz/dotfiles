@@ -36,7 +36,6 @@ M.force_enable = function()
     end
   end))
   
-  vim.notify("🚀 Treesitter context PERMANENTLY ENABLED!", vim.log.levels.INFO)
 end
 
 -- Auto-run on require

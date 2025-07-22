@@ -4,7 +4,10 @@
       "Bash(nvim:*)",
       "Bash(rm:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.lazyvim.org)"
+      "WebFetch(domain:www.lazyvim.org)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

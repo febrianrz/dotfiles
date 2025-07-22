@@ -38,7 +38,7 @@ return {
           desc = "input replace command"
         },
         ['show_option_menu'] = {
-          map = "<leader>o",
+          map = "<leader>so",
           cmd = "<cmd>lua require('spectre').show_options()<CR>",
           desc = "show options"
         },

@@ -18,6 +18,19 @@ local function get_appearance()
 	return "Dark"
 end
 
+-- Function to format workspace names in tab titles
+local function format_tab_title(tab, tabs, panes, config, hover, max_width)
+	local title = tab.tab_title
+	if title and #title > 0 then
+		return title
+	end
+	
+	local pane = tab.active_pane
+	local workspace = pane.domain_name == "local" and "" or pane.domain_name .. ":"
+	
+	return workspace .. (pane.title or "Shell")
+end
+
 local function scheme_for_appearance(appearance)
 	if appearance:find("Dark") then
 		return {
@@ -47,7 +60,11 @@ local config = {
 	audible_bell = "SystemBeep",
 	check_for_updates = false,
 	-- window_decorations = "RESIZE",
-	hide_tab_bar_if_only_one_tab = true,
+	hide_tab_bar_if_only_one_tab = false,
+	show_tab_index_in_tab_bar = true,
+	tab_bar_at_bottom = false,
+	use_fancy_tab_bar = true,
+	tab_max_width = 32,
 	line_height = 1.2,
 	inactive_pane_hsb = {
 		hue = 1.0,
@@ -139,6 +156,134 @@ local config = {
 				mode = "SwapWithActive",
 			}),
 		},
+		-- Session Management
+		{
+			key = "s",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.ShowLauncherArgs({ flags = "WORKSPACES" }),
+		},
+		{
+			key = "c",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.PromptInputLine({
+				description = "Enter workspace name:",
+				action = wezterm.action_callback(function(window, pane, line)
+					if line then
+						window:perform_action(
+							wezterm.action.SwitchToWorkspace({
+								name = line,
+							}),
+							pane
+						)
+					end
+				end),
+			}),
+		},
+		{
+			key = "n",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.SwitchWorkspaceRelative(1),
+		},
+		{
+			key = "p",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.SwitchWorkspaceRelative(-1),
+		},
+		{
+			key = "x",
+			mods = "CMD|SHIFT",
+			action = wezterm.action_callback(function(window, pane)
+				local workspace = window:active_workspace()
+				if workspace == "main" then
+					window:toast_notification("WezTerm", "Cannot close 'main' workspace", nil, 2000)
+				else
+					window:perform_action(wezterm.action.SwitchToWorkspace({ name = "main" }), pane)
+					wezterm.mux.get_workspace(workspace):spawn_tab({})
+					-- Close the workspace by removing all its tabs
+					local tabs = wezterm.mux.get_workspace(workspace):tabs()
+					for _, tab in ipairs(tabs) do
+						tab:close()
+					end
+				end
+			end),
+		},
+		{
+			key = "x",
+			mods = "CMD|ALT|SHIFT",
+			action = wezterm.action_callback(function(window, pane)
+				local workspaces = wezterm.mux.get_workspace_names()
+				local closed_count = 0
+				
+				for _, workspace_name in ipairs(workspaces) do
+					if workspace_name ~= "main" then
+						local workspace = wezterm.mux.get_workspace(workspace_name)
+						if workspace then
+							local tabs = workspace:tabs()
+							for _, tab in ipairs(tabs) do
+								tab:close()
+							end
+							closed_count = closed_count + 1
+						end
+					end
+				end
+				
+				window:perform_action(wezterm.action.SwitchToWorkspace({ name = "main" }), pane)
+				window:toast_notification("WezTerm", "Closed " .. closed_count .. " workspaces", nil, 2000)
+			end),
+		},
+		-- Tab management for sessions
+		{
+			key = "t",
+			mods = "CMD",
+			action = wezterm.action.SpawnTab("CurrentPaneDomain"),
+		},
+		{
+			key = "w",
+			mods = "CMD",
+			action = wezterm.action.CloseCurrentTab({ confirm = true }),
+		},
+		-- Quick workspace switching (Cmd+Alt+1-4)
+		{
+			key = "1",
+			mods = "CMD|ALT",
+			action = wezterm.action.SwitchToWorkspace({ name = "main" }),
+		},
+		{
+			key = "2",
+			mods = "CMD|ALT",
+			action = wezterm.action.SwitchToWorkspace({ name = "dev" }),
+		},
+		{
+			key = "3",
+			mods = "CMD|ALT",
+			action = wezterm.action.SwitchToWorkspace({ name = "test" }),
+		},
+		{
+			key = "4",
+			mods = "CMD|ALT",
+			action = wezterm.action.SwitchToWorkspace({ name = "config" }),
+		},
+		-- Alternative navigation to avoid conflicts with Neovim
+		{
+			key = "h",
+			mods = "CMD|CTRL",
+			action = wezterm.action.ActivatePaneDirection("Left"),
+		},
+		{
+			key = "j",
+			mods = "CMD|CTRL",
+			action = wezterm.action.ActivatePaneDirection("Down"),
+		},
+		{
+			key = "k",
+			mods = "CMD|CTRL",
+			action = wezterm.action.ActivatePaneDirection("Up"),
+		},
+		{
+			key = "l",
+			mods = "CMD|CTRL",
+			action = wezterm.action.ActivatePaneDirection("Right"),
+		},
 	},
 	background = {
 		{
@@ -157,6 +302,8 @@ local config = {
 	macos_window_background_blur = 40,
 	max_fps = 120,
 	prefer_egl = true,
+	status_update_interval = 1000,
+	default_workspace = "main",
 }
 
 -- Event handler for toggling colorscheme
@@ -223,6 +370,37 @@ wezterm.on("toggle-colorscheme", function(window, pane)
 			.. theme_mode
 			.. " && clear\n"
 	)
+end)
+
+-- Format tab titles to show workspace info
+wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
+	return format_tab_title(tab, tabs, panes, config, hover, max_width)
+end)
+
+-- Update status line to show current workspace
+wezterm.on("update-right-status", function(window, pane)
+	local workspace = window:active_workspace()
+	local time = wezterm.strftime("%H:%M")
+	
+	window:set_right_status(wezterm.format({
+		{ Foreground = { Color = "#666666" } },
+		{ Text = workspace .. " | " .. time },
+	}))
+end)
+
+-- Auto-create workspaces on startup
+wezterm.on("gui-startup", function(cmd)
+	local _, _, window = wezterm.mux.spawn_window({
+		workspace = "main",
+	})
+	
+	-- Create additional default workspaces
+	wezterm.mux.spawn_window({ workspace = "dev" })
+	wezterm.mux.spawn_window({ workspace = "test" })
+	wezterm.mux.spawn_window({ workspace = "config" })
+	
+	-- Focus the main workspace
+	window:gui_window():perform_action(wezterm.action.SwitchToWorkspace({ name = "main" }), window:active_pane())
 end)
 
 return config

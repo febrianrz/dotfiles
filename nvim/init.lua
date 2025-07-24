@@ -297,16 +297,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- Global theme switching function - define early
 _G.switch_theme = function()
-  local term_bg = os.getenv 'TERM_BACKGROUND'
-  if term_bg == 'light' then
-    vim.opt.background = 'light'
-    -- Use pcall to safely attempt colorscheme change
-    pcall(vim.cmd.colorscheme, 'tokyonight-day')
-  else
-    vim.opt.background = 'dark'
-    -- Use pcall to safely attempt colorscheme change
-    pcall(vim.cmd.colorscheme, 'tokyonight-night')
-  end
+  -- Use enhanced theme switching with persistence
+  local theme_persistence = require('custom.theme_persistence')
+  theme_persistence.switch_theme_enhanced()
 end
 
 -- [[ Install `lazy.nvim` plugin manager ]]
@@ -523,6 +516,10 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      -- Setup theme persistence system
+      local theme_persistence = require('custom.theme_persistence')
+      theme_persistence.setup_telescope_override()
+      
       vim.keymap.set('n', '<leader>st', builtin.colorscheme, { desc = '[S]earch [T]hemes/Colorschemes' })
       vim.keymap.set('n', '<leader>sb', '<cmd>Telescope buffers<cr>', { desc = 'Buffer Files' })
 

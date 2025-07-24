@@ -21,7 +21,12 @@
       "Bash(~/.config/toggle_theme.sh:*)",
       "Bash(alias:*)",
       "Bash(ln:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(launchctl stop:*)",
+      "Bash(launchctl start:*)",
+      "Bash(open:*)",
+      "Bash(hs:*)"
     ],
     "deny": []
   }

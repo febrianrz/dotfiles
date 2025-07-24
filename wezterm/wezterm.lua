@@ -24,10 +24,10 @@ local function format_tab_title(tab, tabs, panes, config, hover, max_width)
 	if title and #title > 0 then
 		return title
 	end
-	
+
 	local pane = tab.active_pane
 	local workspace = pane.domain_name == "local" and "" or pane.domain_name .. ":"
-	
+
 	return workspace .. (pane.title or "Shell")
 end
 
@@ -86,11 +86,11 @@ local config = {
 	keys = {
 		{
 			key = "d",
-			mods = "CMD",
+			mods = "CMD|SHIFT",
 			action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
 		},
 		{
-			key = "d",
+			key = "v",
 			mods = "CMD|SHIFT",
 			action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }),
 		},
@@ -185,7 +185,7 @@ local config = {
 			action = wezterm.action.SwitchWorkspaceRelative(1),
 		},
 		{
-			key = "p",
+			key = "r",
 			mods = "CMD|SHIFT",
 			action = wezterm.action.SwitchWorkspaceRelative(-1),
 		},
@@ -213,7 +213,7 @@ local config = {
 			action = wezterm.action_callback(function(window, pane)
 				local workspaces = wezterm.mux.get_workspace_names()
 				local closed_count = 0
-				
+
 				for _, workspace_name in ipairs(workspaces) do
 					if workspace_name ~= "main" then
 						local workspace = wezterm.mux.get_workspace(workspace_name)
@@ -226,7 +226,7 @@ local config = {
 						end
 					end
 				end
-				
+
 				window:perform_action(wezterm.action.SwitchToWorkspace({ name = "main" }), pane)
 				window:toast_notification("WezTerm", "Closed " .. closed_count .. " workspaces", nil, 2000)
 			end),
@@ -242,28 +242,28 @@ local config = {
 			mods = "CMD",
 			action = wezterm.action.CloseCurrentTab({ confirm = true }),
 		},
-		-- Quick workspace switching (Cmd+Alt+1-4)
+		-- Quick workspace switching (Cmd+Shift+1-4)
 		{
 			key = "1",
-			mods = "CMD|ALT",
+			mods = "CMD|SHIFT",
 			action = wezterm.action.SwitchToWorkspace({ name = "main" }),
 		},
 		{
 			key = "2",
-			mods = "CMD|ALT",
+			mods = "CMD|SHIFT",
 			action = wezterm.action.SwitchToWorkspace({ name = "dev" }),
 		},
 		{
 			key = "3",
-			mods = "CMD|ALT",
+			mods = "CMD|SHIFT",
 			action = wezterm.action.SwitchToWorkspace({ name = "test" }),
 		},
 		{
 			key = "4",
-			mods = "CMD|ALT",
+			mods = "CMD|SHIFT",
 			action = wezterm.action.SwitchToWorkspace({ name = "config" }),
 		},
-		-- Alternative navigation to avoid conflicts with Neovim
+		-- Alternative navigation using Cmd+Ctrl (avoids Hammerspoon conflicts)
 		{
 			key = "h",
 			mods = "CMD|CTRL",
@@ -381,7 +381,7 @@ end)
 wezterm.on("update-right-status", function(window, pane)
 	local workspace = window:active_workspace()
 	local time = wezterm.strftime("%H:%M")
-	
+
 	window:set_right_status(wezterm.format({
 		{ Foreground = { Color = "#666666" } },
 		{ Text = workspace .. " | " .. time },
@@ -393,12 +393,12 @@ wezterm.on("gui-startup", function(cmd)
 	local _, _, window = wezterm.mux.spawn_window({
 		workspace = "main",
 	})
-	
+
 	-- Create additional default workspaces
 	wezterm.mux.spawn_window({ workspace = "dev" })
 	wezterm.mux.spawn_window({ workspace = "test" })
 	wezterm.mux.spawn_window({ workspace = "config" })
-	
+
 	-- Focus the main workspace
 	window:gui_window():perform_action(wezterm.action.SwitchToWorkspace({ name = "main" }), window:active_pane())
 end)
